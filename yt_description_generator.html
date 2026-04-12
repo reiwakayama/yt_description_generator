@@ -16,19 +16,18 @@
       margin-bottom: 15px;
     }
     button {
-      padding: 10px 20px;
-      cursor: pointer;
-      margin-right: 10px;
-      margin-bottom: 10px;
+    padding: 10px 15px; 
+    width: 75px;    
+     cursor: pointer;
+     margin-right: 10px;
+     margin-bottom: 10px;
+     text-align: center;
     }
     #output, #hashtagsOutput, #outputEn {
       white-space: pre-wrap;
       margin-top: 20px;
       background: #f5f5f5;
       padding: 15px;
-    }
-    #hashtagsOutput {
-      background: #e8f0fe;
     }
     label.checkbox-label {
       display: flex;
@@ -77,22 +76,22 @@
 </div>
 <textarea id="fieldEn" placeholder="フリーテキストを入力"></textarea>
 
-<button onclick="generateText()">説明文を作成</button>
+<button onclick="generateText()">作成</button>
 
 <h3>説明文</h3>
 <div id="output"></div>
 <br>
-<button onclick="copyJapanese()">説明文をコピー</button>
+<button onclick="copyJapanese()">コピー</button>
 
 <h3>ハッシュタグ</h3>
 <div id="hashtagsOutput"></div>
 <br>
-<button onclick="copyHashtags()">ハッシュタグをコピー</button>
+<button onclick="copyHashtags()">コピー</button>
 
 <h3>English description</h3>
 <div id="outputEn"></div>
 <br>
-<button onclick="copyEnglish()">Copy English description</button>
+<button onclick="copyEnglish()">Copy</button>
 
 <script>
 function generateText() {
