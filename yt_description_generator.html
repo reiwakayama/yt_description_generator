@@ -16,8 +16,8 @@
       margin-bottom: 15px;
     }
     button {
-      padding: 10px 15px; 
-      width: 75px;    
+      padding: 10px 15px;
+      width: 75px;
       cursor: pointer;
       margin-right: 10px;
       margin-bottom: 10px;
@@ -29,11 +29,8 @@
       background: #f5f5f5;
       padding: 15px;
     }
-    #bgmLinks a {
-      display: block;
-      color: #065fd4;
-      text-decoration: underline;
-      margin-bottom: 3px;
+    #bgmLinks {
+      margin-top: 0; /* no line break above BGM links */
     }
     label.checkbox-label {
       display: flex;
@@ -44,9 +41,8 @@
     label.checkbox-label input {
       margin-right: 10px;
     }
-    #bgmLinks {
-      margin-top: 0; /* remove extra space above */
-      margin-bottom: 10px; /* space before checkbox */
+    .line-break {
+      margin-top: 10px; /* for spacing after BGM links */
     }
   </style>
 </head>
@@ -74,10 +70,10 @@
 <textarea id="field2" placeholder="フリーテキストを入力"></textarea>
 
 <label>♬*.:*¸¸bgm</label>
-<textarea id="field3" placeholder="bgmを入力"></textarea>
+<textarea id="field3" placeholder="BGM YouTubeリンクを入力"></textarea>
 <div id="bgmLinks"></div>
 
-<label class="checkbox-label">
+<label class="checkbox-label line-break">
   <input type="checkbox" id="englishCC"> english cc available
 </label>
 
@@ -92,60 +88,19 @@
 <h3>説明文</h3>
 <div id="output"></div>
 <br>
-<button onclick="copyJapanese()">コピー</button>
+<button id="copyJpBtn" onclick="copyJapanese()">コピー</button>
 
 <h3>ハッシュタグ</h3>
 <div id="hashtagsOutput"></div>
 <br>
-<button onclick="copyHashtags()">コピー</button>
+<button id="copyHashtagsBtn" onclick="copyHashtags()">コピー</button>
 
 <h3>English description</h3>
 <div id="outputEn"></div>
 <br>
-<button onclick="copyEnglish()">Copy</button>
+<button id="copyEnBtn" onclick="copyEnglish()">Copy</button>
 
 <script>
-// Function to update clickable BGM links as the user types
-async function updateBgmLinks() {
-  const bgmText = document.getElementById("field3").value.trim();
-  const bgmLinksDiv = document.getElementById("bgmLinks");
-  bgmLinksDiv.innerHTML = ""; // clear previous
-
-  if (!bgmText) return;
-
-  const urls = bgmText.match(/https?:\/\/(www\.)?youtu(be\.com|\.be)\/[^\s]+/g);
-  if (!urls) return;
-
-  for (const url of urls) {
-    try {
-      const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
-      const response = await fetch(oembedUrl);
-      let title;
-      if (response.ok) {
-        const data = await response.json();
-        title = data.title;
-      } else {
-        title = url;
-      }
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.textContent = title;
-      bgmLinksDiv.appendChild(a);
-    } catch (err) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.textContent = url;
-      bgmLinksDiv.appendChild(a);
-    }
-  }
-}
-
-// Listen for input changes in BGM textarea
-document.getElementById("field3").addEventListener("input", updateBgmLinks);
-
-// Generate full description (same as before)
 function generateText() {
   const tagInput = document.getElementById("hashtag").value.trim();
   const f1 = document.getElementById("field1").value.trim();
@@ -158,49 +113,79 @@ function generateText() {
   const mandatoryText = `ご視聴ありがとうございます。
 高評価とチャンネル登録していただければ喜びます♡`;
 
+  // Japanese section
   let resultJp = "";
   if (f1) resultJp += f1 + "\n" + divider + "\n";
   if (f2) resultJp += f2 + "\n" + divider + "\n";
   resultJp += mandatoryText + "\n\n";
   resultJp += "♬*.:*¸¸bgm\n" + f3 + "\n";
 
+  // Japanese hashtags
   let hashtagsCommaSeparated = "";
   if (tagInput) {
     const hashtags = tagInput.split(/\s|　/g).filter(t => t.length > 0);
-    resultJp += "\n" + hashtags.map(t => "#" + t).join(" ");
+    const hashForDesc = hashtags.map(t => "#" + t).join(" ");
+    resultJp += "\n" + hashForDesc;
     hashtagsCommaSeparated = hashtags.join(", ");
   }
 
+  // English section
   let resultEn = "";
-  if (englishCC) resultEn += "english cc is available on this video. turn it on if you'd like english subtitles :)\n\n" + divider + "\n";
+  if (englishCC) {
+    resultEn += "english cc is available on this video. turn it on if you'd like english subtitles :)\n\n";
+    resultEn += divider + "\n";
+  }
   const mandatoryTextEn = "thank you for watching - please like and subscribe for more 💛 ";
   resultEn += mandatoryTextEn + "\n\n";
   resultEn += "♬*.:*¸¸bgm\n" + f3 + "\n\n";
   if (fEn) resultEn += fEn + "\n";
 
+  // Output
   document.getElementById("output").textContent = resultJp;
   document.getElementById("outputEn").textContent = resultEn;
   document.getElementById("hashtagsOutput").textContent = hashtagsCommaSeparated;
 }
 
-// Copy functions
+// Copy buttons with temporary checkmark
+function showCheckmark(button) {
+  const originalText = button.textContent;
+  button.textContent = "✓";
+  setTimeout(() => button.textContent = originalText, 1000);
+}
+
 function copyJapanese() {
   const output = document.getElementById("output").textContent;
-  if (!output) return alert("説明文がありません");
-  navigator.clipboard.writeText(output).then(() => alert("説明文をコピーしました"));
+  if (!output) return;
+  navigator.clipboard.writeText(output).then(() => showCheckmark(document.getElementById("copyJpBtn")));
 }
-
 function copyEnglish() {
   const outputEn = document.getElementById("outputEn").textContent;
-  if (!outputEn) return alert("No English description");
-  navigator.clipboard.writeText(outputEn).then(() => alert("Copied English description"));
+  if (!outputEn) return;
+  navigator.clipboard.writeText(outputEn).then(() => showCheckmark(document.getElementById("copyEnBtn")));
 }
-
 function copyHashtags() {
   const hashtags = document.getElementById("hashtagsOutput").textContent;
-  if (!hashtags) return alert("ハッシュタグがありません");
-  navigator.clipboard.writeText(hashtags).then(() => alert("ハッシュタグをコピーしました"));
+  if (!hashtags) return;
+  navigator.clipboard.writeText(hashtags).then(() => showCheckmark(document.getElementById("copyHashtagsBtn")));
 }
+
+// Auto-generate BGM clickable links as you type
+document.getElementById("field3").addEventListener("input", () => {
+  const value = document.getElementById("field3").value;
+  const linksDiv = document.getElementById("bgmLinks");
+  linksDiv.innerHTML = ""; // clear
+  const urls = value.match(/https?:\/\/\S+/g);
+  if (urls) {
+    urls.forEach(url => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.textContent = url;
+      a.style.display = "block";
+      linksDiv.appendChild(a);
+    });
+  }
+});
 </script>
 
 </body>
