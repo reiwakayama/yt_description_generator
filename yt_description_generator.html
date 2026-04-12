@@ -19,8 +19,9 @@
       padding: 10px 20px;
       cursor: pointer;
       margin-right: 10px;
+      margin-bottom: 10px;
     }
-    #output, #hashtagsOutput {
+    #output, #hashtagsOutput, #outputEn {
       white-space: pre-wrap;
       margin-top: 20px;
       background: #f5f5f5;
@@ -28,6 +29,15 @@
     }
     #hashtagsOutput {
       background: #e8f0fe;
+    }
+    label.checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-weight: normal;
+    }
+    label.checkbox-label input {
+      margin-right: 10px;
     }
   </style>
 </head>
@@ -48,7 +58,7 @@
 </div>
 <textarea id="field1" placeholder="関連動画を入力"></textarea>
 
-<label>フリーテキスト</label>
+<label>フリーテキスト（日本語）</label>
 <div style="font-size: 12px; color: gray; margin-bottom: 5px;">
   例: サンライズ出雲 倉敷駅 22:14 → 東京駅 翌7:08
 </div>
@@ -57,11 +67,24 @@
 <label>♬*.:*¸¸bgm</label>
 <textarea id="field3" placeholder="bgmを入力"></textarea>
 
+<label class="checkbox-label">
+  <input type="checkbox" id="englishCC"> english cc available
+</label>
+
+<label>フリーテキスト（英語）</label>
+<textarea id="fieldEn" placeholder="フリーテキストを入力"></textarea>
+
 <button onclick="generateText()">説明文を作成</button>
-<button onclick="copyToClipboard()">説明文をコピー</button>
+<button onclick="copyJapanese()">説明文をコピー</button>
+<button onclick="copyEnglish()">Copy English description</button>
 <button onclick="copyHashtags()">ハッシュタグをコピー</button>
 
+<h3>説明文</h3>
 <div id="output"></div>
+
+<h3>English description</h3>
+<div id="outputEn"></div>
+
 <div id="hashtagsOutput"></div>
 
 <script>
@@ -69,46 +92,54 @@ function generateText() {
   const tagInput = document.getElementById("hashtag").value.trim();
   const f1 = document.getElementById("field1").value.trim();
   const f2 = document.getElementById("field2").value.trim();
+  const fEn = document.getElementById("fieldEn").value.trim();
   const f3 = document.getElementById("field3").value.trim();
+  const englishCC = document.getElementById("englishCC").checked;
 
   const divider = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
   const mandatoryText = `ご視聴ありがとうございます。
 高評価とチャンネル登録していただければ喜びます♡`;
 
-  let result = "";
-
+  // Japanese section
+  let resultJp = "";
   if (f1) {
-    result += f1 + "\n";
-    result += divider + "\n";
+    resultJp += f1 + "\n" + divider + "\n";
   }
-
   if (f2) {
-    result += f2 + "\n";
-    result += divider + "\n";
+    resultJp += f2 + "\n" + divider + "\n";
   }
+  resultJp += mandatoryText + "\n\n";
+  resultJp += "♬*.:*¸¸bgm\n" + f3 + "\n";
 
-  result += mandatoryText + "\n\n";
-  result += "♬*.:*¸¸bgm\n" + f3;
-
+  // Japanese hashtags only
   let hashtagsCommaSeparated = "";
   if (tagInput) {
     const hashtags = tagInput
       .split(/\s|　/g)
       .filter(t => t.length > 0);
 
-    // For description with #
     const hashForDesc = hashtags.map(t => "#" + t).join(" ");
-    result += "\n\n" + hashForDesc;
+    resultJp += "\n" + hashForDesc;
 
-    // For comma-separated hashtags
     hashtagsCommaSeparated = hashtags.join(", ");
   }
 
-  document.getElementById("output").textContent = result;
+  // English section
+  let resultEn = "";
+  if (englishCC) {
+    resultEn += "english cc is available on this video. turn it on if you'd like english subtitles :)\n\n";
+  }
+  if (fEn) {
+    resultEn += fEn + "\n\n";
+  }
+  resultEn += "♬*.:*¸¸bgm\n" + f3 + "\n";
+
+  document.getElementById("output").textContent = resultJp;
+  document.getElementById("outputEn").textContent = resultEn;
   document.getElementById("hashtagsOutput").textContent = hashtagsCommaSeparated;
 }
 
-function copyToClipboard() {
+function copyJapanese() {
   const output = document.getElementById("output").textContent;
   if (!output) {
     alert("説明文がありません");
@@ -116,6 +147,17 @@ function copyToClipboard() {
   }
   navigator.clipboard.writeText(output).then(() => {
     alert("説明文をコピーしました");
+  });
+}
+
+function copyEnglish() {
+  const outputEn = document.getElementById("outputEn").textContent;
+  if (!outputEn) {
+    alert("No English description");
+    return;
+  }
+  navigator.clipboard.writeText(outputEn).then(() => {
+    alert("Copied English description");
   });
 }
 
