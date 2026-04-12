@@ -20,11 +20,14 @@
       cursor: pointer;
       margin-right: 10px;
     }
-    #output {
+    #output, #hashtagsOutput {
       white-space: pre-wrap;
       margin-top: 20px;
       background: #f5f5f5;
       padding: 15px;
+    }
+    #hashtagsOutput {
+      background: #e8f0fe;
     }
   </style>
 </head>
@@ -34,7 +37,7 @@
 
 <label>ハッシュタグ ※間に空白が必須</label>
 <div style="font-size: 12px; color: gray; margin-bottom: 5px;">
-  例: 格安　お得　ぼっち旅 女ひとり旅 一人旅
+  例: 格安 お得 ぼっち旅 女ひとり旅 一人旅
 </div>
 <textarea id="hashtag" placeholder="ハッシュタグを入力"></textarea>
 
@@ -54,10 +57,12 @@
 <label>♬*.:*¸¸bgm</label>
 <textarea id="field3" placeholder="bgmを入力"></textarea>
 
-<button onclick="generateText()">説明文を作成する</button>
-<button onclick="copyToClipboard()">コピー</button>
+<button onclick="generateText()">説明文を作成</button>
+<button onclick="copyToClipboard()">説明文をコピー</button>
+<button onclick="copyHashtags()">ハッシュタグをコピー</button>
 
 <div id="output"></div>
+<div id="hashtagsOutput"></div>
 
 <script>
 function generateText() {
@@ -65,11 +70,6 @@ function generateText() {
   const f1 = document.getElementById("field1").value.trim();
   const f2 = document.getElementById("field2").value.trim();
   const f3 = document.getElementById("field3").value.trim();
-
-  if (!f3) {
-    alert("bgmを入力してください");
-    return;
-  }
 
   const divider = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
   const mandatoryText = `ご視聴ありがとうございます。
@@ -90,17 +90,22 @@ function generateText() {
   result += mandatoryText + "\n\n";
   result += "♬*.:*¸¸bgm\n" + f3;
 
-  // ハッシュタグ生成（半角・全角スペース対応）
+  let hashtagsCommaSeparated = "";
   if (tagInput) {
     const hashtags = tagInput
-      .split(/\s|　/g)   // 半角スペース or 全角スペースで分割
-      .filter(t => t.length > 0)
-      .map(t => "#" + t)
-      .join(" ");
-    result += "\n\n" + hashtags;
+      .split(/\s|　/g)
+      .filter(t => t.length > 0);
+
+    // For description with #
+    const hashForDesc = hashtags.map(t => "#" + t).join(" ");
+    result += "\n\n" + hashForDesc;
+
+    // For comma-separated hashtags
+    hashtagsCommaSeparated = hashtags.join(", ");
   }
 
   document.getElementById("output").textContent = result;
+  document.getElementById("hashtagsOutput").textContent = hashtagsCommaSeparated;
 }
 
 function copyToClipboard() {
@@ -111,6 +116,17 @@ function copyToClipboard() {
   }
   navigator.clipboard.writeText(output).then(() => {
     alert("説明文をコピーしました");
+  });
+}
+
+function copyHashtags() {
+  const hashtags = document.getElementById("hashtagsOutput").textContent;
+  if (!hashtags) {
+    alert("ハッシュタグがありません");
+    return;
+  }
+  navigator.clipboard.writeText(hashtags).then(() => {
+    alert("ハッシュタグをコピーしました");
   });
 }
 </script>
