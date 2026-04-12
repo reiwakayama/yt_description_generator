@@ -47,20 +47,20 @@
 
 <label>ハッシュタグ ※間に空白が必須</label>
 <div style="font-size: 12px; color: gray; margin-bottom: 5px;">
-  例: 格安 お得 ぼっち旅 女ひとり旅 一人旅
+  格安 お得 ぼっち旅 女ひとり旅 一人旅
 </div>
 <textarea id="hashtag" placeholder="ハッシュタグを入力"></textarea>
 
 <label>関連動画</label>
 <div style="font-size: 12px; color: gray; margin-bottom: 5px;">
-  例: ▼この動画の前編はこちら<br>
+  ▼この動画の前編はこちら<br>
   https://youtu.be/9wQKzBq3-sI?si=5AbfzoXrwk2uwnYN
 </div>
 <textarea id="field1" placeholder="関連動画を入力"></textarea>
 
 <label>フリーテキスト（日本語）</label>
 <div style="font-size: 12px; color: gray; margin-bottom: 5px;">
-  例: サンライズ出雲 倉敷駅 22:14 → 東京駅 翌7:08
+  サンライズ出雲 倉敷駅 22:14 → 東京駅 翌7:08
 </div>
 <textarea id="field2" placeholder="フリーテキストを入力"></textarea>
 
@@ -72,20 +72,27 @@
 </label>
 
 <label>フリーテキスト（英語）</label>
+<div style="font-size: 12px; color: gray; margin-bottom: 5px;">
+  in this vlog: art basel hong kong, art central, HKWALLS 2026 @ PMQ
+</div>
 <textarea id="fieldEn" placeholder="フリーテキストを入力"></textarea>
 
 <button onclick="generateText()">説明文を作成</button>
-<button onclick="copyJapanese()">説明文をコピー</button>
-<button onclick="copyEnglish()">Copy English description</button>
-<button onclick="copyHashtags()">ハッシュタグをコピー</button>
 
 <h3>説明文</h3>
 <div id="output"></div>
+<br>
+<button onclick="copyJapanese()">説明文をコピー</button>
+
+<h3>ハッシュタグ</h3>
+<div id="hashtagsOutput"></div>
+<br>
+<button onclick="copyHashtags()">ハッシュタグをコピー</button>
 
 <h3>English description</h3>
 <div id="outputEn"></div>
-
-<div id="hashtagsOutput"></div>
+<br>
+<button onclick="copyEnglish()">Copy English description</button>
 
 <script>
 function generateText() {
@@ -125,14 +132,21 @@ function generateText() {
   }
 
   // English section
-  let resultEn = "";
-  if (englishCC) {
-    resultEn += "english cc is available on this video. turn it on if you'd like english subtitles :)\n\n";
-  }
-  if (fEn) {
-    resultEn += fEn + "\n\n";
-  }
-  resultEn += "♬*.:*¸¸bgm\n" + f3 + "\n";
+let resultEn = "";
+
+if (englishCC) {
+  resultEn += "english cc is available on this video. turn it on if you'd like english subtitles :)\n\n";
+  resultEn += divider + "\n"; // only add divider if CC is checked
+}
+
+const mandatoryTextEn = "thank you for watching - please like and subscribe for more 💛 ";
+resultEn += mandatoryTextEn + "\n\n";
+
+resultEn += "♬*.:*¸¸bgm\n" + f3 + "\n\n";  // extra line break before free text
+
+if (fEn) {
+  resultEn += fEn + "\n";
+}
 
   document.getElementById("output").textContent = resultJp;
   document.getElementById("outputEn").textContent = resultEn;
