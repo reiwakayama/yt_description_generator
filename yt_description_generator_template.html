@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Description Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 10px;
+      width: 80px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    #output, #hashtagsOutput, #bgmLinks {
+      white-space: pre-wrap;
+      margin-top: 20px;
+      background: #f5f5f5;
+      padding: 15px;
+    }
+    #bgmLinks {
+      margin-top: 0;
+    }
+    label.checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-weight: normal;
+    }
+    label.checkbox-label input {
+      margin-right: 10px;
+    }
+    .line-break {
+      margin-top: 10px;
+    }
+    table input {
+      width: 100%;
+      border: none;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    th, td {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+<h2>YouTube Description Generator</h2>
+
+<label>Hashtags ※separate using spaces</label>
+<div style="font-size: 12px; color: gray; margin-bottom: 5px;">
+  Ex. hongkong japan solotravel travelvlog
+</div>
+<textarea id="hashtag" placeholder="Enter hashtags here"></textarea>
+
+<label>Free text</label>
+<div style="font-size: 12px; color: gray; margin-bottom: 5px;">
+  Ex. in this vlog: art basel hong kong, art central, HKWALLS 2026 @ PMQ
+</div>
+<textarea id="field2" placeholder="Enter free text here"></textarea>
+
+<label>Chapters</label>
+<table id="chaptersTable" style="width:100%; margin-bottom:15px; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th>Timestamp</th>
+      <th>Chapter Title</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><input value="0:00"></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td></tr>
+  </tbody>
+</table>
+
+<label>♬*.:*¸¸bgm</label>
+<textarea id="field3" placeholder="Enter bgm YouTube link(s) here"></textarea>
+<div id="bgmLinks"></div>
+
+<button onclick="generateText()">Generate</button>
+
+<h3>Description</h3>
+<div id="output"></div>
+<br>
+<button id="copyJpBtn" onclick="copyJapanese()">Copy</button>
+
+<h3>Hashtags</h3>
+<div id="hashtagsOutput"></div>
+<br>
+<button id="copyHashtagsBtn" onclick="copyHashtags()">Copy</button>
+
+<script>
+function generateText() {
+  const tagInput = document.getElementById("hashtag").value.trim();
+  const f2 = document.getElementById("field2").value.trim();
+  const f3 = document.getElementById("field3").value.trim();
+
+  // chapters
+  const rows = document.querySelectorAll("#chaptersTable tbody tr");
+  let chaptersJp = "";
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("input");
+    const time = cells[0].value.trim();
+    const jp = cells[1].value.trim();
+    if (time && jp) chaptersJp += `${time} ${jp}\n`;
+  });
+
+  const divider = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
+  const mandatoryTextJp = `thank you for watching - please like and subscribe for more 💛`;
+
+  let resultJp = "";
+  if (f2) {
+    resultJp += f2 + "\n";
+    if (chaptersJp) resultJp += divider + "\n" + chaptersJp + divider + "\n";
+  }
+  resultJp += mandatoryTextJp + "\n\n";
+  resultJp += "♬*.:*¸¸bgm\n" + f3 + "\n";
+
+  let hashtagsCommaSeparated = "";
+  if (tagInput) {
+    const hashtags = tagInput.split(/\s|　/g).filter(t => t.length > 0);
+    const hashForDesc = hashtags.map(t => "#" + t).join(" ");
+    resultJp += "\n" + hashForDesc;
+    hashtagsCommaSeparated = hashtags.join(", ");
+  }
+
+  document.getElementById("output").textContent = resultJp;
+  document.getElementById("hashtagsOutput").textContent = hashtagsCommaSeparated;
+}
+
+// copy
+function showCheckmark(button) {
+  const originalText = button.textContent;
+  button.textContent = "✓";
+  setTimeout(() => button.textContent = originalText, 1000);
+}
+function copyJapanese() {
+  const output = document.getElementById("output").textContent;
+  if (!output) return;
+  navigator.clipboard.writeText(output).then(() => showCheckmark(document.getElementById("copyJpBtn")));
+}
+function copyHashtags() {
+  const hashtags = document.getElementById("hashtagsOutput").textContent;
+  if (!hashtags) return;
+  navigator.clipboard.writeText(hashtags).then(() => showCheckmark(document.getElementById("copyHashtagsBtn")));
+}
+
+// YouTube title links
+document.getElementById("field3").addEventListener("input", async () => {
+  const value = document.getElementById("field3").value;
+  const linksDiv = document.getElementById("bgmLinks");
+  linksDiv.innerHTML = "";
+
+  const urls = value.match(/https?:\/\/\S+/g);
+  if (!urls) return;
+
+  for (const url of urls) {
+    let videoUrl = url;
+    if (url.includes("youtu.be/")) {
+      const id = url.split("youtu.be/")[1].split(/[?&]/)[0];
+      videoUrl = `https://www.youtube.com/watch?v=${id}`;
+    }
+    try {
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
+      const data = await res.json();
+      const a = document.createElement("a");
+      a.href = videoUrl;
+      a.target = "_blank";
+      a.textContent = data.title;
+      a.style.display = "block";
+      a.style.marginBottom = "5px";
+      linksDiv.appendChild(a);
+    } catch {
+      const a = document.createElement("a");
+      a.href = videoUrl;
+      a.target = "_blank";
+      a.textContent = videoUrl;
+      a.style.display = "block";
+      linksDiv.appendChild(a);
+    }
+  }
+});
+</script>
+
+</body>
+</html>
