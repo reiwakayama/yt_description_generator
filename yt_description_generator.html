@@ -30,7 +30,7 @@
       padding: 15px;
     }
     #bgmLinks {
-      margin-top: 0; /* no line break above BGM links */
+      margin-top: 0;
     }
     label.checkbox-label {
       display: flex;
@@ -42,7 +42,16 @@
       margin-right: 10px;
     }
     .line-break {
-      margin-top: 10px; /* for spacing after BGM links */
+      margin-top: 10px;
+    }
+    table input {
+      width: 100%;
+      border: none;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    th, td {
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -68,6 +77,27 @@
   サンライズ出雲 倉敷駅 22:14 → 東京駅 翌7:08
 </div>
 <textarea id="field2" placeholder="フリーテキストを入力"></textarea>
+
+<label>見出し</label>
+<table id="chaptersTable" style="width:100%; margin-bottom:15px; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th>timestamp</th>
+      <th>日本語</th>
+      <th>English</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><input value="0:00"></td><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td><td><input></td></tr>
+    <tr><td><input></td><td><input></td><td><input></td></tr>
+  </tbody>
+</table>
 
 <label>♬*.:*¸¸bgm</label>
 <textarea id="field3" placeholder="BGM YouTubeリンクを入力"></textarea>
@@ -109,18 +139,40 @@ function generateText() {
   const f3 = document.getElementById("field3").value.trim();
   const englishCC = document.getElementById("englishCC").checked;
 
+  // chapters
+  const rows = document.querySelectorAll("#chaptersTable tbody tr");
+  let chaptersJp = "";
+  let chaptersEn = "";
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("input");
+    const time = cells[0].value.trim();
+    const jp = cells[1].value.trim();
+    const en = cells[2].value.trim();
+
+    if (time && (jp || en)) {
+      if (jp) chaptersJp += `${time} ${jp}\n`;
+      if (en) chaptersEn += `${time} ${en}\n`;
+    }
+  });
+
   const divider = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
-  const mandatoryText = `ご視聴ありがとうございます。
+  const mandatoryTextJp = `ご視聴ありがとうございます。
 高評価とチャンネル登録していただければ喜びます♡`;
 
-  // Japanese section
+  // --- Japanese description ---
   let resultJp = "";
   if (f1) resultJp += f1 + "\n" + divider + "\n";
-  if (f2) resultJp += f2 + "\n" + divider + "\n";
-  resultJp += mandatoryText + "\n\n";
+
+  if (f2) {
+    resultJp += f2 + "\n";
+    if (chaptersJp) resultJp += divider + "\n" + chaptersJp + divider + "\n";
+  }
+
+  resultJp += mandatoryTextJp + "\n\n";
   resultJp += "♬*.:*¸¸bgm\n" + f3 + "\n";
 
-  // Japanese hashtags
+  // hashtags
   let hashtagsCommaSeparated = "";
   if (tagInput) {
     const hashtags = tagInput.split(/\s|　/g).filter(t => t.length > 0);
@@ -129,24 +181,26 @@ function generateText() {
     hashtagsCommaSeparated = hashtags.join(", ");
   }
 
-  // English section
+  // --- English description ---
   let resultEn = "";
   if (englishCC) {
-    resultEn += "english cc is available on this video. turn it on if you'd like english subtitles :)\n\n";
-    resultEn += divider + "\n";
+    resultEn += "english cc is available on this video. turn it on if you'd like english subtitles :)\n";
   }
-  const mandatoryTextEn = "thank you for watching - please like and subscribe for more 💛 ";
+
+  if (chaptersEn) resultEn += divider + "\n" + chaptersEn + divider + "\n";
+
+  const mandatoryTextEn = "thank you for watching - please like and subscribe for more 💛";
   resultEn += mandatoryTextEn + "\n\n";
   resultEn += "♬*.:*¸¸bgm\n" + f3 + "\n\n";
+
   if (fEn) resultEn += fEn + "\n";
 
-  // Output
   document.getElementById("output").textContent = resultJp;
   document.getElementById("outputEn").textContent = resultEn;
   document.getElementById("hashtagsOutput").textContent = hashtagsCommaSeparated;
 }
 
-// Copy buttons with temporary checkmark
+// copy
 function showCheckmark(button) {
   const originalText = button.textContent;
   button.textContent = "✓";
@@ -169,12 +223,11 @@ function copyHashtags() {
   navigator.clipboard.writeText(hashtags).then(() => showCheckmark(document.getElementById("copyHashtagsBtn")));
 }
 
-// Auto-generate BGM clickable links as you type
-// Auto-generate YouTube title links as you type
+// YouTube title links
 document.getElementById("field3").addEventListener("input", async () => {
   const value = document.getElementById("field3").value;
   const linksDiv = document.getElementById("bgmLinks");
-  linksDiv.innerHTML = ""; // clear
+  linksDiv.innerHTML = "";
 
   const urls = value.match(/https?:\/\/\S+/g);
   if (!urls) return;
@@ -182,7 +235,6 @@ document.getElementById("field3").addEventListener("input", async () => {
   for (const url of urls) {
     let videoUrl = url;
 
-    // Normalize shortened URLs
     if (url.includes("youtu.be/")) {
       const id = url.split("youtu.be/")[1].split(/[?&]/)[0];
       videoUrl = `https://www.youtube.com/watch?v=${id}`;
@@ -195,13 +247,12 @@ document.getElementById("field3").addEventListener("input", async () => {
       const a = document.createElement("a");
       a.href = videoUrl;
       a.target = "_blank";
-      a.textContent = data.title; // ← video title
+      a.textContent = data.title;
       a.style.display = "block";
       a.style.marginBottom = "5px";
 
       linksDiv.appendChild(a);
-    } catch (e) {
-      // fallback to URL if fetch fails
+    } catch {
       const a = document.createElement("a");
       a.href = videoUrl;
       a.target = "_blank";
