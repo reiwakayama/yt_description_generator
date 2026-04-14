@@ -49,7 +49,6 @@
 <body>
 
 <h2>YouTube説明文ジェネレーター</h2>
-<p>Channel: <a href="https://www.youtube.com/@reimmoriks">https://www.youtube.com/@reimmoriks</a></p>
 
 <label>ハッシュタグ ※間に空白が必須</label>
 <div style="font-size: 12px; color: gray; margin-bottom: 5px;">
@@ -171,20 +170,45 @@ function copyHashtags() {
 }
 
 // Auto-generate BGM clickable links as you type
-document.getElementById("field3").addEventListener("input", () => {
+// Auto-generate YouTube title links as you type
+document.getElementById("field3").addEventListener("input", async () => {
   const value = document.getElementById("field3").value;
   const linksDiv = document.getElementById("bgmLinks");
   linksDiv.innerHTML = ""; // clear
+
   const urls = value.match(/https?:\/\/\S+/g);
-  if (urls) {
-    urls.forEach(url => {
+  if (!urls) return;
+
+  for (const url of urls) {
+    let videoUrl = url;
+
+    // Normalize shortened URLs
+    if (url.includes("youtu.be/")) {
+      const id = url.split("youtu.be/")[1].split(/[?&]/)[0];
+      videoUrl = `https://www.youtube.com/watch?v=${id}`;
+    }
+
+    try {
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
+      const data = await res.json();
+
       const a = document.createElement("a");
-      a.href = url;
+      a.href = videoUrl;
       a.target = "_blank";
-      a.textContent = url;
+      a.textContent = data.title; // ← video title
+      a.style.display = "block";
+      a.style.marginBottom = "5px";
+
+      linksDiv.appendChild(a);
+    } catch (e) {
+      // fallback to URL if fetch fails
+      const a = document.createElement("a");
+      a.href = videoUrl;
+      a.target = "_blank";
+      a.textContent = videoUrl;
       a.style.display = "block";
       linksDiv.appendChild(a);
-    });
+    }
   }
 });
 </script>
