@@ -166,8 +166,11 @@ function generateText() {
   if (f1) resultJp += f1 + "\n" + divider + "\n";
 
   if (f2) {
-    resultJp += f2 + "\n";
-    if (chaptersJp) resultJp += divider + "\n" + chaptersJp + divider + "\n";
+    resultJp += f2 + "\n" + divider + "\n";
+  
+    if (chaptersJp) {
+      resultJp += chaptersJp + divider + "\n";
+    }
   }
 
   resultJp += mandatoryTextJp + "\n\n";
