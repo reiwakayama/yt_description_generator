@@ -198,9 +198,9 @@ function generateText() {
 
   const mandatoryTextEn = "thank you for watching - please like and subscribe for more 💛";
   resultEn += mandatoryTextEn + "\n\n";
-  resultEn += "♬*.:*¸¸bgm\n" + f3 + "\n\n";
+  resultEn += "♬*.:*¸¸bgm\n" + f3;
 
-  if (fEn) resultEn += fEn + "\n";
+  if (fEn) resultEn += "\n\n" + fEn;
 
   document.getElementById("output").textContent = resultJp;
   document.getElementById("outputEn").textContent = resultEn;
